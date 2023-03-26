@@ -1,3 +1,4 @@
+import { api } from "@/utils/api";
 import { FC } from "react";
 
 interface dashboardProps {}

@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import {
+  adminProcedure,
+  createTRPCRouter,
+  publicProcedure,
+} from "@/server/api/trpc";
 import { SignJWT } from "jose";
 import { nanoid } from "nanoid";
 import { getJwtSecretKey } from "@/lib/auth";

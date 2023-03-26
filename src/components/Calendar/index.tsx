@@ -6,19 +6,12 @@ import format from "date-fns/format";
 import { CLOSING_HOUR, INTERVAL, OPENING_HOUR } from "@/constants/config";
 import { getTimes } from "@/lib/getTimes";
 
-interface CalendarProps {}
-
-interface DateType {
-  justDate: Date | null;
-  dateTime: Date | null;
+interface CalendarProps {
+  setDate: (date: DateTime) => void;
+  date: DateTime;
 }
 
-const Calendar: FC<CalendarProps> = ({}) => {
-  const [date, setDate] = useState<DateType>({
-    justDate: null,
-    dateTime: null,
-  });
-
+const Calendar: FC<CalendarProps> = ({ setDate, date }) => {
   const times = getTimes(date.justDate);
 
   return (
