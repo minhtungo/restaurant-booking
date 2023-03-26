@@ -5,9 +5,9 @@ import { SignJWT } from "jose";
 import { nanoid } from "nanoid";
 import { getJwtSecretKey } from "@/lib/auth";
 import cookie from "cookie";
-import { TRPCError } from "@trpc/server/dist/error/TRPCError";
+import { TRPCError } from "@trpc/server";
 
-export const exampleRouter = createTRPCRouter({
+export const adminRouter = createTRPCRouter({
   login: publicProcedure
     .input(z.object({ email: z.string().email(), password: z.string() }))
     .mutation(async ({ ctx, input }) => {
