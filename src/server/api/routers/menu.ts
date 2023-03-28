@@ -17,4 +17,7 @@ export const menuRouter = createTRPCRouter({
 
     return withUrls;
   }),
+  checkMenuStatus: publicProcedure.mutation(async () => {
+    return { success: true };
+  }),
 });

@@ -6,7 +6,6 @@ import { MAX_FILE_SIZE } from "@/constants/config";
 
 import { selectOptions } from "@/utils/helper";
 import { api } from "@/utils/api";
-import { Categories } from "@/utils/types";
 
 const DynamicSelect = dynamic(() => import("react-select"), { ssr: false });
 
@@ -33,6 +32,9 @@ const Menu = () => {
   const { mutateAsync: createPresignedUrl } =
     api.admin.createPresignedUrl.useMutation();
   const { mutateAsync: addItem } = api.admin.addMenuItem.useMutation();
+  const { data: menuItems, refetch } = api.menu.getMenuItems.useQuery();
+  const { mutateAsync: deleteMenuItem } =
+    api.admin.deleteMenuItem.useMutation();
 
   const handleTextChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -96,11 +98,16 @@ const Menu = () => {
       price: input.price,
     });
 
-    refetch();
+    await refetch();
 
     // reset
     setInput(initialInput);
     setPreview("");
+  };
+
+  const handleDelete = async (imageKey: string, id: string) => {
+    await deleteMenuItem({ imageKey, id });
+    await refetch();
   };
 
   return (
@@ -167,7 +174,7 @@ const Menu = () => {
           <button
             className="h-12 rounded-sm bg-gray-200 disabled:cursor-not-allowed"
             disabled={!input.file || !input.name}
-            onClick={addMenuItem}
+            onClick={void addMenuItem}
           >
             Add menu item
           </button>
@@ -184,10 +191,12 @@ const Menu = () => {
                   <Image priority fill alt="" src={menuItem.url} />
                 </div>
                 <button
-                  onClick={() => handleDelete(menuItem.imageKey, menuItem.id)}
+                  onClick={() =>
+                    void handleDelete(menuItem.imageKey, menuItem.id)
+                  }
                   className="text-xs text-red-500"
                 >
-                  delete
+                  Delete
                 </button>
               </div>
             ))}
