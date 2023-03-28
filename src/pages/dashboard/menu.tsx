@@ -5,6 +5,8 @@ import type { MultiValue } from "react-select/dist/declarations/src";
 import { MAX_FILE_SIZE } from "@/constants/config";
 
 import { selectOptions } from "@/utils/helper";
+import { api } from "@/utils/api";
+import { Categories } from "@/utils/types";
 
 const DynamicSelect = dynamic(() => import("react-select"), { ssr: false });
 
@@ -25,7 +27,12 @@ const initialInput = {
 const Menu = () => {
   const [input, setInput] = useState<Input>(initialInput);
   const [preview, setPreview] = useState<string>("");
+
   const [error, setError] = useState<string>("");
+
+  const { mutateAsync: createPresignedUrl } =
+    api.admin.createPresignedUrl.useMutation();
+  const { mutateAsync: addItem } = api.admin.addMenuItem.useMutation();
 
   const handleTextChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -48,6 +55,52 @@ const Menu = () => {
       return setError("Max file size is 5MB");
 
     setInput((prev) => ({ ...prev, file: e.target.files![0] }));
+  };
+
+  const handleImgUpload = async () => {
+    const { file } = input;
+    if (!file) return;
+
+    const { url, fields, key } = await createPresignedUrl({
+      fileType: file.type,
+    });
+
+    const data = {
+      ...fields,
+      "Content-Type": file.type,
+      file,
+    };
+
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      formData.append(key, value as any);
+    });
+
+    await fetch(url, {
+      method: "POST",
+      body: formData,
+    });
+
+    return key;
+  };
+
+  const addMenuItem = async () => {
+    const key = await handleImgUpload();
+    if (!key) throw new Error("No key");
+
+    await addItem({
+      imageKey: key,
+      name: input.name,
+      categories: input.categories.map((c) => c.value),
+      price: input.price,
+    });
+
+    refetch();
+
+    // reset
+    setInput(initialInput);
+    setPreview("");
   };
 
   return (
