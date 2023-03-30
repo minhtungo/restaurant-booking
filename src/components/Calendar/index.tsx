@@ -1,13 +1,12 @@
-import type { FC } from "react";
-import { useState, useEffect } from "react";
-import ReactCalendar from "react-calendar";
-import add from "date-fns/add";
-import format from "date-fns/format";
-import { CLOSING_HOUR, INTERVAL, OPENING_HOUR } from "@/constants/config";
-import { getTimes } from "@/lib/getTimes";
-import { useRouter } from "next/router";
+import { INTERVAL } from "@/constants/config";
+import { getOpeningTimes, roundToNearestMinutes } from "@/utils/helper";
+import { Day } from "@prisma/client";
 import { format, formatISO, isBefore, parse } from "date-fns";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import ReactCalendar from "react-calendar";
 
+import type { FC } from "react";
 interface DateTime {
   justDate: Date | null;
   dateTime: Date | null;
@@ -21,8 +20,25 @@ interface CalendarProps {
 const Calendar: FC<CalendarProps> = ({ days, closedDays }) => {
   const router = useRouter();
   // Determine if today is closed
-  const today = days.find((d) => d.dayOfWeek === now.getDay());
+  const today = days.find((d) => d.dayOfWeek === new Date().getDay());
+  const rounded = roundToNearestMinutes(new Date(), INTERVAL);
+  const closing = parse(today!.closeTime, "kk:mm", new Date());
+  const tooLate = !isBefore(rounded, closing);
+  if (tooLate) closedDays.push(formatISO(new Date().setHours(0, 0, 0, 0)));
 
+  const [date, setDate] = useState<DateTime>({
+    justDate: null,
+    dateTime: null,
+  });
+
+  useEffect(() => {
+    if (date.dateTime) {
+      localStorage.setItem("selectedTime", date.dateTime.toISOString());
+      router.push("/menu");
+    }
+  }, [date.dateTime, router]);
+
+  const times = date.justDate && getOpeningTimes(date.justDate, days);
 
   return (
     <div className="flex h-screen flex-col items-center justify-center">
