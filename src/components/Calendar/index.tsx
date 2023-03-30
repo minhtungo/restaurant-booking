@@ -1,18 +1,28 @@
 import type { FC } from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ReactCalendar from "react-calendar";
 import add from "date-fns/add";
 import format from "date-fns/format";
 import { CLOSING_HOUR, INTERVAL, OPENING_HOUR } from "@/constants/config";
 import { getTimes } from "@/lib/getTimes";
+import { useRouter } from "next/router";
+import { format, formatISO, isBefore, parse } from "date-fns";
 
-interface CalendarProps {
-  setDate: (date: DateTime) => void;
-  date: DateTime;
+interface DateTime {
+  justDate: Date | null;
+  dateTime: Date | null;
 }
 
-const Calendar: FC<CalendarProps> = ({ setDate, date }) => {
-  const times = getTimes(date.justDate);
+interface CalendarProps {
+  days: Day[];
+  closedDays: string[]; // as ISO strings
+}
+
+const Calendar: FC<CalendarProps> = ({ days, closedDays }) => {
+  const router = useRouter();
+  // Determine if today is closed
+  const today = days.find((d) => d.dayOfWeek === now.getDay());
+
 
   return (
     <div className="flex h-screen flex-col items-center justify-center">
@@ -34,6 +44,7 @@ const Calendar: FC<CalendarProps> = ({ setDate, date }) => {
           minDate={new Date()}
           className="REACT-CALENDAR p-2"
           view="month"
+          tileDisabled={({ date }) => closedDays.includes(formatISO(date))}
           onClickDay={(date) =>
             setDate((prev) => ({ ...prev, justDate: date }))
           }
