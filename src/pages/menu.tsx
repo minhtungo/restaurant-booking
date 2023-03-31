@@ -1,3 +1,4 @@
+import Cart from "@/components/Cart";
 import Menu from "@/components/Menu";
 import Spinner from "@/components/Spinner";
 import { api } from "@/utils/api";
@@ -50,6 +51,12 @@ const MenuPage: FC = () => {
 
   return (
     <>
+      <Cart
+        removeFromCart={removeFromCart}
+        products={productsInCart}
+        open={showCart}
+        setOpen={setShowCart}
+      />
       {isFetchedAfterMount && selectedTime ? (
         <div className="mx-auto mt-12 max-w-7xl sm:px-6 lg:px-8">
           <div className="flex w-full justify-end">
